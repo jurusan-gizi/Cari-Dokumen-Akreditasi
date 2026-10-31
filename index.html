@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cari Dokumen Akreditasi</title>
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{--hijau:#0f5132;--hijau2:#157347;--kuning:#ffd166;--bg:#f4f6f5;--kartu:#fff;--teks:#1d2421;--abu:#66706b;--garis:#dde3e0}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--teks)}
+  header{position:sticky;top:0;z-index:5;background:var(--hijau);color:#fff;padding:10px 12px 8px;padding-top:max(10px,env(safe-area-inset-top))}
+  .atas{display:flex;align-items:center;gap:8px}
+  .atas h1{font-size:16px;margin:0;flex:1;font-weight:600}
+  .ikonbtn{background:transparent;border:0;color:#fff;font-size:20px;padding:4px 6px;cursor:pointer}
+  .cari{display:flex;gap:6px;margin-top:8px}
+  .cari input{flex:1;font-size:17px;padding:11px 12px;border-radius:10px;border:0;outline:none}
+  .cari button{border:0;border-radius:10px;background:var(--kuning);font-size:18px;padding:0 12px;cursor:pointer}
+  .tabs{display:flex;gap:4px;margin-top:8px}
+  .tabs button{flex:1;border:0;border-radius:8px;padding:7px 4px;background:rgba(255,255,255,.12);color:#fff;font-size:13px;cursor:pointer}
+  .tabs button.on{background:#fff;color:var(--hijau);font-weight:600}
+  .filter{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;background:#fff;border-bottom:1px solid var(--garis);scrollbar-width:none}
+  .filter::-webkit-scrollbar{display:none}
+  .chip{flex:none;border:1px solid var(--garis);background:#fff;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer;white-space:nowrap;color:var(--teks)}
+  .chip.on{background:var(--hijau2);border-color:var(--hijau2);color:#fff}
+  main{padding:10px 12px 90px;max-width:820px;margin:0 auto}
+  .info{font-size:13px;color:var(--abu);margin:4px 2px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .kartu{background:var(--kartu);border:1px solid var(--garis);border-radius:12px;padding:11px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+  .kartu .ik{font-size:24px;line-height:1;margin-top:2px}
+  .kartu .isi{flex:1;min-width:0;cursor:pointer}
+  .kartu .nm{font-weight:600;font-size:15px;word-break:break-word}
+  .kartu .pt{font-size:12px;color:var(--abu);margin-top:3px;word-break:break-word}
+  .kartu .mt{font-size:11.5px;color:var(--abu);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .lbl{background:#e8f3ec;color:var(--hijau);border-radius:6px;padding:1px 6px;font-weight:600}
+  .lbl.isi{background:#fff3cd;color:#7a5a00}
+  .lbl.tag{background:#eef0ff;color:#3a43a0;font-weight:500}
+  .bintang{background:transparent;border:0;font-size:22px;cursor:pointer;color:#c9cfcc;padding:0 2px}
+  .bintang.on{color:#f5a400}
+  mark{background:var(--kuning);border-radius:3px;padding:0 1px}
+  .kosong{text-align:center;color:var(--abu);padding:40px 10px;font-size:14px;line-height:1.6}
+  .btn{border:0;border-radius:10px;padding:11px 14px;font-size:15px;cursor:pointer;background:var(--hijau2);color:#fff}
+  .btn.ghost{background:#e8f3ec;color:var(--hijau)}
+  .btnisi{display:block;width:100%;margin:6px 0 12px;background:#fff3cd;color:#7a5a00;border:1px dashed #e0b84a}
+  dialog{border:0;border-radius:14px;padding:18px;width:min(92vw,440px)}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog label{display:block;font-size:13px;color:var(--abu);margin:10px 0 4px}
+  dialog input{width:100%;font-size:15px;padding:10px;border:1px solid var(--garis);border-radius:8px}
+  .baris{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center;z-index:9}
+  .toast.on{opacity:1}
+  .grup{font-size:12px;font-weight:700;color:var(--hijau);margin:14px 2px 6px;text-transform:uppercase;letter-spacing:.03em}
+</style>
+</head>
+<body>
+<header>
+  <div class="atas">
+    <h1>📂 Cari Dokumen Akreditasi · Dietisien</h1>
+    <button class="ikonbtn" id="bMuat" title="Muat ulang indeks">⟳</button>
+    <button class="ikonbtn" id="bSet" title="Pengaturan">⚙</button>
+  </div>
+  <div class="cari">
+    <input id="q" type="text" placeholder="Ketik: SK kurikulum, renstra, tracer study…" autocomplete="off" enterkeyhint="search">
+    <button id="bHapus" title="Kosongkan">✕</button>
+  </div>
+  <div class="tabs">
+    <button data-tab="cari" class="on">🔍 Cari</button>
+    <button data-tab="fav">⭐ Siap tunjuk</button>
+    <button data-tab="baru">🕘 Terakhir dibuka</button>
+  </div>
+</header>
+<div class="filter" id="fK"></div>
+<div class="filter" id="fJ" style="padding-top:0"></div>
+<main>
+  <div class="info"><span id="status">Memuat…</span><span id="jml"></span></div>
+  <div id="hasil"></div>
+</main>
+
+<dialog id="dSet">
+  <h3 style="margin:0 0 4px">Pengaturan</h3>
+  <div style="font-size:13px;color:var(--abu)">Isi sekali saja. Data tersimpan di perangkat ini.</div>
+  <label>URL Web App (Apps Script)</label>
+  <input id="iUrl" placeholder="https://script.google.com/macros/s/…/exec">
+  <label>PIN</label>
+  <input id="iPin" type="password" placeholder="PIN yang sama dengan di Code.gs">
+  <div class="baris">
+    <button class="btn" id="bSimpan">Simpan &amp; muat</button>
+    <button class="btn ghost" id="bRebuild">Perbarui indeks di Drive</button>
+    <button class="btn ghost" id="bTutup">Tutup</button>
+  </div>
+  <div id="setInfo" style="font-size:12px;color:var(--abu);margin-top:12px"></div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  // ---------- penyimpanan aman ----------
+  const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  };
+  const $ = id => document.getElementById(id);
+
+  let cfg = LS.get('cfg', { url: '', pin: '' });
+  let DATA = [], UPDATED = null;
+  let fav = new Set(LS.get('fav', []));
+  let recent = LS.get('recent', []);           // [id,...] terbaru di depan
+  let tab = 'cari', fK = '', fJ = '', isiIds = null, isiQ = '';
+
+  // ---------- sinonim istilah akreditasi ----------
+  const SYN = {
+    sk: ['sk', 'surat keputusan', 'keputusan'],
+    renstra: ['renstra', 'rencana strategis'],
+    renop: ['renop', 'rencana operasional'],
+    rps: ['rps', 'rencana pembelajaran'],
+    mou: ['mou', 'moa', 'pks', 'kerja sama', 'kerjasama', 'perjanjian'],
+    pks: ['pks', 'mou', 'moa', 'kerja sama', 'kerjasama', 'perjanjian'],
+    kerjasama: ['kerjasama', 'kerja sama', 'mou', 'moa', 'pks', 'iks'],
+    vmts: ['vmts', 'visi', 'misi'],
+    spmi: ['spmi', 'penjaminan mutu', 'mutu internal'],
+    ami: ['ami', 'audit mutu', 'audit internal'],
+    rtm: ['rtm', 'rapat tinjauan', 'tinjauan manajemen'],
+    tracer: ['tracer', 'penelusuran lulusan', 'tracer study'],
+    kepuasan: ['kepuasan', 'survei', 'survey', 'kuesioner'],
+    survei: ['survei', 'survey', 'kepuasan', 'kuesioner'],
+    pkm: ['pkm', 'pengabdian', 'pengabmas', 'abdimas'],
+    pengabmas: ['pengabmas', 'pengabdian', 'pkm', 'abdimas'],
+    penelitian: ['penelitian', 'riset', 'research'],
+    kurikulum: ['kurikulum', 'curriculum'],
+    sop: ['sop', 'prosedur', 'pos'],
+    lahan: ['lahan', 'rs', 'rumah sakit', 'wahana'],
+    ppepp: ['ppepp', 'penetapan', 'pelaksanaan', 'evaluasi', 'pengendalian', 'peningkatan'],
+    dtps: ['dtps', 'dosen tetap'],
+    led: ['led', 'evaluasi diri'],
+    les: ['les', 'evaluasi diri']
+  };
+
+  // ---------- util ----------
+  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[_\-.,()\[\]{}\/\\:;'"+&#]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const IKON = { PDF: '📕', Dokumen: '📘', Spreadsheet: '📗', Presentasi: '📙', Gambar: '🖼️', Video: '🎬', Folder: '📁', Lainnya: '📄' };
+  function lev(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i]; let best = i;
+      for (let j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (cur[j] < best) best = cur[j];
+      }
+      if (best > max) return max + 1;
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function tgl(iso) {
+    const d = new Date(iso); if (isNaN(d)) return '';
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  let tT;
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => t.classList.remove('on'), 2600); }
+
+  function siapkan(rows) {
+    rows.forEach(r => {
+      r._n = norm(r.n);
+      r._x = norm([r.p, r.t, r.b].join(' '));
+      r._w = Array.from(new Set((r._n + ' ' + norm(r.t)).split(' ').filter(w => w.length >= 3)));
+    });
+    return rows;
+  }
+
+  // ---------- data ----------
+  function muatLokal() {
+    const c = LS.get('idx', null);
+    if (c && c.rows) { DATA = siapkan(c.rows); UPDATED = c.updated; }
+  }
+  async function muatServer(diam) {
+    if (!cfg.url || !cfg.pin) { bukaSet(); return; }
+    $('status').textContent = 'Mengambil indeks terbaru…';
+    try {
+      const res = await fetch(cfg.url + '?action=index&pin=' + encodeURIComponent(cfg.pin));
+      const js = await res.json();
+      if (!js.ok) throw new Error(js.error || 'Gagal');
+      DATA = siapkan(js.rows); UPDATED = js.updated;
+      LS.set('idx', { rows: js.rows, updated: js.updated });
+      if (js.building) toast('Indeks di Drive sedang diperbarui…');
+      else if (!diam) toast('Indeks dimuat: ' + DATA.length + ' item');
+    } catch (e) {
+      toast(DATA.length ? 'Offline — memakai indeks tersimpan' : 'Gagal memuat: ' + e.message);
+    }
+    bangunFilter(); render();
+  }
+
+  // ---------- pencarian ----------
+  function tokenAlt(tok) { return SYN[tok] ? SYN[tok].map(norm) : [tok]; }
+  function skor(r, toks) {
+    let s = 0;
+    for (const alts of toks) {
+      let best = 0;
+      for (const a of alts) {
+        if (r._n.includes(a)) {
+          const awal = (' ' + r._n).includes(' ' + a);
+          best = Math.max(best, awal ? 5 : 3);
+        } else if (r._x.includes(a)) best = Math.max(best, 1.5);
+        else if (a.length >= 4 && !a.includes(' ')) {
+          const max = a.length >= 8 ? 2 : 1;
+          if (r._w.some(w => lev(a, w.slice(0, a.length + 1), max) <= max || lev(a, w, max) <= max)) best = Math.max(best, 1);
+        }
+      }
+      if (!best) return 0;
+      s += best;
+    }
+    if (fav.has(r.id) || r.f) s += 0.5;
+    return s;
+  }
+  function lolosFilter(r) { return (!fK || r.k === fK) && (!fJ || r.j === fJ); }
+
+  function hasilCari(q) {
+    const toks = norm(q).split(' ').filter(Boolean).map(tokenAlt);
+    let out;
+    if (!toks.length) {
+      if (!fK && !fJ) return null;
+      out = DATA.filter(lolosFilter).sort((a, b) => (a.p + a.n).localeCompare(b.p + b.n, 'id'));
+    } else {
+      out = [];
+      for (const r of DATA) {
+        if (!lolosFilter(r)) continue;
+        const s = skor(r, toks);
+        if (s) out.push([s, r]);
+      }
+      out.sort((a, b) => b[0] - a[0] || String(b[1].m).localeCompare(String(a[1].m)));
+      out = out.map(x => x[1]);
+    }
+    if (isiIds && isiQ === q) {
+      const ada = new Set(out.map(r => r.id));
+      DATA.forEach(r => { if (isiIds.has(r.id) && !ada.has(r.id) && lolosFilter(r)) out.push(Object.assign(r, { _isi: 1 })); });
+    }
+    return out;
+  }
+
+  async function cariIsi() {
+    const q = $('q').value.trim();
+    if (!q) return;
+    toast('Mencari di isi dokumen…');
+    try {
+      const res = await fetch(cfg.url + '?action=search&pin=' + encodeURIComponent(cfg.pin) + '&q=' + encodeURIComponent(q));
+      const js = await res.json();
+      if (!js.ok) throw new Error(js.error);
+      isiIds = new Set(js.ids); isiQ = q;
+      const n = DATA.filter(r => isiIds.has(r.id)).length;
+      toast(n ? n + ' dokumen memuat kata tersebut' : 'Tidak ditemukan di isi dokumen');
+      render();
+    } catch (e) { toast('Pencarian isi butuh internet: ' + e.message); }
+  }
+
+  // ---------- tampilan ----------
+  function sorot(teks, q) {
+    let h = esc(teks);
+    const toks = norm(q).split(' ').filter(t => t.length >= 2);
+    if (!toks.length) return h;
+    const re = new RegExp('(' + toks.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+    return h.replace(re, '<mark>$1</mark>');
+  }
+  function kartu(r, q) {
+    const on = fav.has(r.id) || r.f;
+    const tags = [r.b ? '<span class="lbl tag">Butir ' + esc(r.b) + '</span>' : '',
+                  r.t ? '<span class="lbl tag">' + esc(r.t) + '</span>' : ''].join('');
+    return '<div class="kartu" data-id="' + esc(r.id) + '">' +
+      '<div class="ik">' + (IKON[r.j] || '📄') + '</div>' +
+      '<div class="isi" data-buka="' + esc(r.id) + '">' +
+        '<div class="nm">' + sorot(r.n, q) + '</div>' +
+        '<div class="pt">📍 ' + esc(r.p || 'Folder utama') + '</div>' +
+        '<div class="mt"><span class="lbl">' + esc(r.k) + '</span>' + (r._isi && isiQ === q ? '<span class="lbl isi">cocok di isi</span>' : '') +
+          tags + '<span>' + esc(r.j) + (r.s ? ' · ' + r.s + ' KB' : '') + ' · ' + tgl(r.m) + '</span></div>' +
+      '</div>' +
+      '<button class="bintang' + (on ? ' on' : '') + '" data-fav="' + esc(r.id) + '" title="Tandai siap tunjuk">★</button>' +
+    '</div>';
+  }
+
+  function render() {
+    const q = $('q').value.trim();
+    const H = $('hasil');
+    $('status').textContent = DATA.length
+      ? DATA.length + ' item terindeks' + (UPDATED ? ' · diperbarui ' + tgl(UPDATED) : '')
+      : 'Indeks belum ada';
+    let list = [], judul = '';
+    if (tab === 'fav') {
+      list = DATA.filter(r => (fav.has(r.id) || r.f) && lolosFilter(r));
+      judul = list.length ? '' : 'Belum ada dokumen "siap tunjuk".<br>Ketuk ★ pada hasil pencarian untuk menandai dokumen yang sering diminta asesor.';
+    } else if (tab === 'baru') {
+      const m = new Map(DATA.map(r => [r.id, r]));
+      list = recent.map(id => m.get(id)).filter(Boolean).filter(lolosFilter);
+      judul = list.length ? '' : 'Belum ada dokumen yang dibuka.';
+    } else {
+      const h = hasilCari(q);
+      if (h === null) {
+        H.innerHTML = '<div class="kosong">Ketik kata kunci dokumen yang diminta asesor,<br>atau pilih Kriteria di atas untuk melihat isinya.<br><br>' +
+          '<small>Tips: kata kunci boleh singkat (mis. <b>sk tim</b>, <b>renstra</b>, <b>tracer 2025</b>). Salah ketik sedikit tetap ketemu.</small></div>';
+        $('jml').textContent = ''; return;
+      }
+      list = h;
+      if (!list.length) judul = 'Tidak ada nama file yang cocok.';
+    }
+    $('jml').textContent = list.length ? list.length + ' hasil' : '';
+    let html = '';
+    if (tab === 'cari' && q) html += '<button class="btn btnisi" id="bIsi">🔎 Cari "' + esc(q) + '" juga di ISI dokumen (PDF/Word/Docs)</button>';
+    if (judul) html += '<div class="kosong">' + judul + '</div>';
+    html += list.slice(0, 300).map(r => kartu(r, q)).join('');
+    if (list.length > 300) html += '<div class="kosong">…dan ' + (list.length - 300) + ' lainnya. Persempit kata kunci atau pilih Kriteria.</div>';
+    H.innerHTML = html;
+    const bi = $('bIsi'); if (bi) bi.onclick = cariIsi;
+  }
+
+  function bangunFilter() {
+    const ks = Array.from(new Set(DATA.map(r => r.k))).sort((a, b) => {
+      const na = /^K\d+$/.test(a), nb = /^K\d+$/.test(b);
+      if (na && nb) return +a.slice(1) - +b.slice(1);
+      return na ? -1 : nb ? 1 : a.localeCompare(b, 'id');
+    });
+    $('fK').innerHTML = '<button class="chip' + (!fK ? ' on' : '') + '" data-k="">Semua</button>' +
+      ks.map(k => '<button class="chip' + (fK === k ? ' on' : '') + '" data-k="' + esc(k) + '">' + esc(k) + '</button>').join('');
+    const js = ['PDF', 'Dokumen', 'Spreadsheet', 'Presentasi', 'Gambar', 'Video', 'Folder', 'Lainnya'].filter(j => DATA.some(r => r.j === j));
+    $('fJ').innerHTML = '<button class="chip' + (!fJ ? ' on' : '') + '" data-j="">Semua jenis</button>' +
+      js.map(j => '<button class="chip' + (fJ === j ? ' on' : '') + '" data-j="' + j + '">' + IKON[j] + ' ' + j + '</button>').join('');
+  }
+
+  // ---------- event ----------
+  let tQ;
+  $('q').addEventListener('input', () => { clearTimeout(tQ); tQ = setTimeout(() => { if (tab !== 'cari') setTab('cari'); else render(); }, 120); });
+  $('q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('q').blur(); render(); } });
+  $('bHapus').onclick = () => { $('q').value = ''; isiIds = null; render(); $('q').focus(); };
+  document.addEventListener('keydown', e => { if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); } });
+
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    render();
+  }
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+  $('fK').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; fK = b.dataset.k; bangunFilter(); render(); };
+  $('fJ').onclick = e => { const b = e.target.closest('[data-j]'); if (!b) return; fJ = b.dataset.j; bangunFilter(); render(); };
+
+  $('hasil').addEventListener('click', e => {
+    const f = e.target.closest('[data-fav]');
+    if (f) {
+      const id = f.dataset.fav;
+      fav.has(id) ? fav.delete(id) : fav.add(id);
+      LS.set('fav', Array.from(fav)); render(); return;
+    }
+    const b = e.target.closest('[data-buka]');
+    if (b) {
+      const r = DATA.find(x => x.id === b.dataset.buka); if (!r) return;
+      recent = [r.id].concat(recent.filter(x => x !== r.id)).slice(0, 40);
+      LS.set('recent', recent);
+      window.open(r.u, '_blank', 'noopener');
+    }
+  });
+
+  // ---------- pengaturan ----------
+  function bukaSet() {
+    $('iUrl').value = cfg.url; $('iPin').value = cfg.pin;
+    $('setInfo').textContent = DATA.length ? 'Indeks tersimpan: ' + DATA.length + ' item' + (UPDATED ? ', diperbarui ' + new Date(UPDATED).toLocaleString('id-ID') : '') : '';
+    try { $('dSet').showModal(); } catch (e) { $('dSet').setAttribute('open', ''); }
+  }
+  $('bSet').onclick = bukaSet;
+  $('bTutup').onclick = () => $('dSet').close();
+  $('bSimpan').onclick = () => {
+    cfg = { url: $('iUrl').value.trim(), pin: $('iPin').value.trim() };
+    LS.set('cfg', cfg); $('dSet').close(); muatServer();
+  };
+  $('bRebuild').onclick = async () => {
+    cfg = { url: $('iUrl').value.trim(), pin: $('iPin').value.trim() }; LS.set('cfg', cfg);
+    try {
+      const js = await (await fetch(cfg.url + '?action=rebuild&pin=' + encodeURIComponent(cfg.pin))).json();
+      toast(js.ok ? js.msg : js.error);
+    } catch (e) { toast('Gagal: ' + e.message); }
+  };
+  $('bMuat').onclick = () => muatServer();
+
+  // ---------- mulai ----------
+  muatLokal(); bangunFilter(); render();
+  muatServer(true);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
