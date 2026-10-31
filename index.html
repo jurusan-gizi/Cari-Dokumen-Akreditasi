@@ -103,7 +103,9 @@
   };
   const $ = id => document.getElementById(id);
 
-  let cfg = LS.get('cfg', { url: '', pin: '' });
+  const URL_BAWAAN = 'https://script.google.com/macros/s/AKfycbzGo82zFapNR5DYhlGgvVvG0_pK7IuRdkhxwSquX-b8quzv-gHnI4onBI4sYlNBkyWt5w/exec';
+  let cfg = LS.get('cfg', { url: URL_BAWAAN, pin: '' });
+  if (!cfg.url) cfg.url = URL_BAWAAN;
   let DATA = [], UPDATED = null;
   let fav = new Set(LS.get('fav', []));
   let recent = LS.get('recent', []);           // [id,...] terbaru di depan
